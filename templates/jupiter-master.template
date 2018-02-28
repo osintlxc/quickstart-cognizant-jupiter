@@ -132,14 +132,12 @@
         "WarS3Bucket": {
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
             "ConstraintDescription": "S3 bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Default": "jupiter.uswest1",
             "Description": "S3 bucket name for the JUPITER web application .war file. This bucket must be in the same region where this stack is being deployed. Bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
             "Type": "String"
         },
         "EmrLogBucket": {
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
             "ConstraintDescription": "S3 bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Default": "jupiter.emrlogs.uswest1",
             "Description": "S3 bucket name for the EMR logs. This bucket must be in the same region where this stack is being deployed. Bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
             "Type": "String"
         },
@@ -164,7 +162,7 @@
         "JupiterSSLCert": {
             "Description": "ARN of the SSL certificate for terminating HTTPS connections on the load balancer; leave this blank to disable SSL, however it is strongly recommended to turn on SSL in production environments",
             "Type": "String",
-			"Default": "arn:aws:acm:us-west-1:140089806333:certificate/11002b7b-f6e9-4db0-83ba-3a1cf39f66e7"
+			"Default": ""
         },
         "DBName": {
             "Default": "jupiterdb",

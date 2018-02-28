@@ -1,0 +1,22 @@
+[
+  {
+      "ParameterKey": "KeyPairName",
+      "ParameterValue": "$[alfred_getkeypair]"
+  },
+  {
+      "ParameterKey": "RemoteAccessCIDR",
+      "ParameterValue": "0.0.0.0/0"
+  },
+  {   
+   "ParameterKey": "MasterDBPassword",
+   "ParameterValue": "$[alfred_genpass_16]"
+  },
+  {
+      "ParameterKey": "WarS3Bucket",
+      "ParameterValue": "$[alfred_getlicensebucket]"
+  },
+  {
+      "ParameterKey": "EmrLogBucket",
+      "ParameterValue": "$[alfred_getmediabucket]"
+  }
+]
