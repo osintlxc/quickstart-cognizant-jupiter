@@ -19,6 +19,7 @@
                         "default": "Elastic Beanstalk"
                     },
                     "Parameters": [
+						"SolutionStackName",
 						"WarS3Bucket",
 						"WarS3Key",
 						"KeyPairName",
@@ -32,6 +33,7 @@
                         "default": "Database"
                     },
                     "Parameters": [					
+						"DBName",
 						"DbEngine",
 						"DbClass",
 						"MasterDBUser",
@@ -52,6 +54,9 @@
                 }
             ],
             "ParameterLabels": {
+                "SolutionStackName": {
+                    "default": "Elastic Beanstalk technology stack"
+                },
                 "WarS3Bucket": {
                     "default": "S3 Bucket holding the .war file for the web application"
                 },
@@ -69,6 +74,9 @@
                 },
 				"JupiterInstanceType": {
 					"default": "EC2 Instance Type"
+				},
+				"DBName": {
+					"default": "Database Name"
 				},
 				"DbEngine": {
 					"default": "Database Engine"
@@ -110,6 +118,13 @@
 		}
 	},
     "Parameters": {
+        "SolutionStackName": {
+            "AllowedValues": ["64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 8 Java 8", "64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 7 Java 7", "64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 7 Java 6"],
+            "ConstraintDescription": "Must be a valid and supported technology stack on Elastic Beanstalk",
+            "Default": "64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 8 Java 8",
+            "Description": "Elastic Beanstalk technology stack",
+            "Type": "String"
+        },
         "WarS3Bucket": {
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
             "ConstraintDescription": "S3 bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
@@ -147,10 +162,23 @@
             "Type": "String",
 			"Default": "arn:aws:acm:us-west-1:140089806333:certificate/11002b7b-f6e9-4db0-83ba-3a1cf39f66e7"
         },
+        "DBName": {
+            "Default": "jupiterdb",
+            "Description": "The database name",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "64",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+        },
 		"MasterDBUser": {
             "Description": "Master user name for database",
             "Type": "String",
-            "Default": "jupiter"
+            "Default": "jupiter",
+            "MinLength": "1",
+            "MaxLength": "16",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
         },
         "MasterDBPassword": {
             "Description": "Master user password for database. Can only contain alphanumeric characters or the following special characters !^*-_+",
@@ -158,7 +186,8 @@
             "Type": "String",
 			"MinLength": 8,
             "MaxLength": 28,
-            "AllowedPattern": "[a-zA-Z0-9!^*\\-_+]*"
+            "AllowedPattern": "[a-zA-Z0-9!^*\\-_+]*",
+			"ConstraintDescription": "Can only contain alphanumeric characters or the following special characters !^*-_+"
         },
         "CreateEmr": {
             "Description": "Set this to true to create a new EMR instance. If you do not wish to use EMR or want to use an existing EMR, set this to false.",
@@ -227,10 +256,7 @@
             "Description": "Type of RDS instance",
             "Type": "String",
             "Default": "mysql",
-            "AllowedValues": [
-                "mysql",
-                "postgres"
-            ]
+            "AllowedValues": [ "mysql" ]
         },
         "DbClass": {
             "Description": "Instance class of RDS instance",
@@ -443,7 +469,15 @@
 		"JupiterBootstrapDownloadPolicy": {
 			"Type" : "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "JupiterBootstrapDownloadPolicy",
+				"PolicyName": {
+					"Fn::Join": [
+						"-",
+						[
+							{ "Ref": "AWS::StackName" },
+							"JupiterBootstrapDownloadPolicy"
+						]
+					]
+				},
 				"Roles": [ "EMR_DefaultRole" ],
 				"PolicyDocument" : {
 					"Version" : "2012-10-17",
@@ -524,7 +558,15 @@
 		"JupiterBeanstalk": {
 			"Type" : "AWS::ElasticBeanstalk::Application",
 			"Properties" : {
-				"ApplicationName" : "JupiterBeanstalkApplication",
+				"ApplicationName" : {
+					"Fn::Join": [
+						"-",
+						[
+							{ "Ref": "AWS::StackName" },
+							"JupiterBeanstalk"
+						]
+					]
+				},
 				"Description" : "AWS Elastic Beanstalk for JUPITER"
 			}
 		},
@@ -541,10 +583,11 @@
 		},
 		"JupiterConfigurationTemplate": {
 			"Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+			"DependsOn": "JupiterDBInstance",
 			"Properties": {
 				"ApplicationName": { "Ref": "JupiterBeanstalk" },
 				"Description": "JUPITER Configuration Template",				
-				"SolutionStackName": "64bit Amazon Linux 2017.03 v2.6.5 running Tomcat 8 Java 8",
+				"SolutionStackName": { "Ref" : "SolutionStackName" },
 				"OptionSettings": {
 					"Fn::If": [ "NoSSL",
 						[
@@ -607,6 +650,35 @@
 								"Namespace" : "aws:elasticbeanstalk:environment",
 								"OptionName" : "LoadBalancerType",
 								"Value" : "classic"				
+							},
+							{
+								"Namespace" : "aws:elasticbeanstalk:application:environment",
+								"OptionName" : "JDBC_CONNECTION_STRING",
+								"Value" : {
+									"Fn::Join": [
+										"",
+										[
+											"jdbc:mysql://",
+											{
+												"Fn::GetAtt": [
+													"JupiterDBInstance",
+													"Endpoint.Address"
+												]
+											},
+											":",
+											{
+												"Fn::GetAtt": [
+													"JupiterDBInstance",
+													"Endpoint.Port"
+												]
+											},
+											"/",
+											{
+												"Ref": "DBName"
+											}
+										]
+									]
+								}				
 							}
 						],					
 						[
@@ -684,6 +756,35 @@
 								"Namespace" : "aws:elb:loadbalancer",
 								"OptionName" : "SSLCertificateId",
 								"Value" : { "Ref" : "JupiterSSLCert" }				
+							},
+							{
+								"Namespace" : "aws:elasticbeanstalk:application:environment",
+								"OptionName" : "JDBC_CONNECTION_STRING",
+								"Value" : {
+									"Fn::Join": [
+										"",
+										[
+											"jdbc:mysql://",
+											{
+												"Fn::GetAtt": [
+													"JupiterDBInstance",
+													"Endpoint.Address"
+												]
+											},
+											":",
+											{
+												"Fn::GetAtt": [
+													"JupiterDBInstance",
+													"Endpoint.Port"
+												]
+											},
+											"/",
+											{
+												"Ref": "DBName"
+											}
+										]
+									]
+								}				
 							}
 						]
 					]
@@ -694,7 +795,15 @@
 			"Type": "AWS::ElasticBeanstalk::Environment",
 			"Properties": {
 				"ApplicationName": { "Ref": "JupiterBeanstalk" },
-				"EnvironmentName" :  "Jupiter-env",
+				"EnvironmentName" :  {
+					"Fn::Join": [
+						"-",
+						[
+							{ "Ref": "AWS::StackName" },
+							"JupiterEnvironment"
+						]
+					]
+				},
 				"Description": "JUPITER Environment",
 				"TemplateName": { "Ref": "JupiterConfigurationTemplate" },
 				"VersionLabel": { "Ref": "JupiterVersion" },
@@ -725,6 +834,9 @@
             "DependsOn": [ "DBSubnetGroup", "JupiterDBSecurityGroup" ],
 			"DeletionPolicy": "Delete",
             "Properties": {
+				"DBName": {
+                    "Ref": "DBName"
+                },
                 "Engine": { "Ref": "DbEngine" },
                 "AllocatedStorage": "20",
                 "DBInstanceClass": { "Ref": "DbClass" },
@@ -1026,21 +1138,21 @@
 			},
             "Description": "JUPITER Application URL",
 			"Export": {
-				"Name": "JupiterAppEndpoint" 
+				"Name": { "Fn::Sub": "${AWS::StackName}:JupiterAppEndpoint" }
 			}
         },
         "JupiterDBEndpoint": {
             "Value": { "Fn::GetAtt": [ "JupiterDBInstance", "Endpoint.Address" ] },
             "Description": "Database endpoint hostname",
             "Export": {
-				"Name": "JupiterDBEndpoint"
+				"Name":{ "Fn::Sub": "${AWS::StackName}:JupiterDBEndpoint" }
             }
         },
         "JupiterEmr": {
 			"Condition": "CreateEmrCondition",
             "Value": { "Fn::GetAtt": [ "JupiterEmr", "MasterPublicDNS" ] },
 			"Description": "EMR master node endpoint",
-            "Export": { "Name": "JupiterEmr" }
+            "Export": { "Name":{ "Fn::Sub": "${AWS::StackName}:JupiterEmr" } }
         }
 	}
 }
