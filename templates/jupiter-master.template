@@ -661,7 +661,6 @@
 							},
 							{
 								"Namespace" : "aws:elasticbeanstalk:application:environment",
-<<<<<<< HEAD
 								"OptionName" : "RDS_USERNAME",
 								"Value" : { "Ref": "MasterDBUser" }
 							},
@@ -672,8 +671,6 @@
 							},
 							{
 								"Namespace" : "aws:elasticbeanstalk:application:environment",
-=======
->>>>>>> 94fd0b5b26fba76d62dac0fdc7d5ef7821945642
 								"OptionName" : "JDBC_CONNECTION_STRING",
 								"Value" : {
 									"Fn::Join": [
@@ -780,7 +777,6 @@
 							},
 							{
 								"Namespace" : "aws:elasticbeanstalk:application:environment",
-<<<<<<< HEAD
 								"OptionName" : "RDS_USERNAME",
 								"Value" : { "Ref": "MasterDBUser" }
 							},
@@ -791,8 +787,6 @@
 							},
 							{
 								"Namespace" : "aws:elasticbeanstalk:application:environment",
-=======
->>>>>>> 94fd0b5b26fba76d62dac0fdc7d5ef7821945642
 								"OptionName" : "JDBC_CONNECTION_STRING",
 								"Value" : {
 									"Fn::Join": [

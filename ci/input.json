@@ -18,5 +18,17 @@
   {
       "ParameterKey": "EmrLogBucket",
       "ParameterValue": "$[alfred_getmediabucket]"
+  },
+  {
+      "ParameterKey": "VpcId",
+      "ParameterValue": ""
+  },
+  {
+      "ParameterKey": "PublicSubnetIds",
+      "ParameterValue": ""
+  },
+  {
+      "ParameterKey": "PrivateSubnetIds",
+      "ParameterValue": ""
   }
 ]
