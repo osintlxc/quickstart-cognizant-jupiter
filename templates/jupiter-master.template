@@ -144,7 +144,7 @@
         "WarS3Key": {
             "AllowedPattern": "^[0-9a-zA-Z-.]*$",
             "ConstraintDescription": "S3 key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
-            "Default": "jupiter-6Nov-v7.war",
+            "Default": "jupiter.war",
             "Description": "S3 key for the JUPITER web application .war file. S3 key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
             "Type": "String"
         },
@@ -557,6 +557,27 @@
 				"DBSubnetGroupDescription" : "JUPITER database subnet group"
 			}
 		},
+        "JupiterSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": { "Ref": "VpcId" },
+                "GroupDescription": "Allow access to Jupiter application from remote access CIDR",
+				"SecurityGroupIngress": [
+                    {
+						"IpProtocol" : "tcp",
+						"FromPort" : "80",
+						"ToPort" : "80",
+						"CidrIp" : { "Ref": "RemoteAccessCIDR" }
+                    },
+                    {
+						"IpProtocol" : "tcp",
+						"FromPort" : "443",
+						"ToPort" : "443",
+						"CidrIp" : { "Ref": "RemoteAccessCIDR" }
+                    }										
+				]
+            }
+        },
         "JupiterInstanceProfile": {
             "Type": "AWS::IAM::InstanceProfile",
             "Properties": {
@@ -591,7 +612,7 @@
 		},
 		"JupiterConfigurationTemplate": {
 			"Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
-			"DependsOn": "JupiterDBInstance",
+			"DependsOn": [ "JupiterDBInstance", "JupiterSecurityGroup" ],
 			"Properties": {
 				"ApplicationName": { "Ref": "JupiterBeanstalk" },
 				"Description": "JUPITER Configuration Template",				
@@ -658,6 +679,16 @@
 								"Namespace" : "aws:elasticbeanstalk:environment",
 								"OptionName" : "LoadBalancerType",
 								"Value" : "classic"				
+							},
+							{
+								"Namespace" : "aws:autoscaling:launchconfiguration",
+								"OptionName" : "SecurityGroups",
+								"Value" : { "Ref" : "JupiterSecurityGroup" }				
+							},
+							{
+								"Namespace" : "aws:autoscaling:launchconfiguration",
+								"OptionName" : "SSHSourceRestriction",
+								"Value" : { "Fn::Join" : [ "", ["tcp,22,22,", { "Ref" : "JupiterSecurityGroup" }]]}				
 							},
 							{
 								"Namespace" : "aws:elasticbeanstalk:application:environment",
@@ -759,6 +790,16 @@
 								"Namespace" : "aws:elasticbeanstalk:environment",
 								"OptionName" : "LoadBalancerType",
 								"Value" : "classic"				
+							},
+							{
+								"Namespace" : "aws:autoscaling:launchconfiguration",
+								"OptionName" : "SecurityGroups",
+								"Value" : { "Ref" : "JupiterSecurityGroup" }				
+							},
+							{
+								"Namespace" : "aws:autoscaling:launchconfiguration",
+								"OptionName" : "SSHSourceRestriction",
+								"Value" : { "Fn::Join" : [ "", ["tcp,22,22,", { "Ref" : "JupiterSecurityGroup" }]]}				
 							},
 							{
 								"Namespace" : "aws:elb:loadbalancer",
