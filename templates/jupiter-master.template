@@ -681,8 +681,13 @@
 								"Value" : "classic"				
 							},
 							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
+								"Namespace" : "aws:elb:loadbalancer",
 								"OptionName" : "SecurityGroups",
+								"Value" : { "Ref" : "JupiterSecurityGroup" }				
+							},
+							{
+								"Namespace" : "aws:elb:loadbalancer",
+								"OptionName" : "ManagedSecurityGroup",
 								"Value" : { "Ref" : "JupiterSecurityGroup" }				
 							},
 							{
@@ -792,8 +797,13 @@
 								"Value" : "classic"				
 							},
 							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
+								"Namespace" : "aws:elb:loadbalancer",
 								"OptionName" : "SecurityGroups",
+								"Value" : { "Ref" : "JupiterSecurityGroup" }				
+							},
+							{
+								"Namespace" : "aws:elb:loadbalancer",
+								"OptionName" : "ManagedSecurityGroup",
 								"Value" : { "Ref" : "JupiterSecurityGroup" }				
 							},
 							{
