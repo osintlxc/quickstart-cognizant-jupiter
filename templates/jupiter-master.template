@@ -6,13 +6,16 @@
             "ParameterGroups": [
                 {
                     "Label": {
-                        "default": "Network"
+                        "default": "Network Configuration"
                     },
                     "Parameters": [
-                        "VpcId",
-                        "PublicSubnetIds",
-						"PrivateSubnetIds",
-						"RemoteAccessCIDR"
+                        "AvailabilityZones",
+                        "VPCCIDR",
+                        "PrivateSubnet1CIDR",
+                        "PrivateSubnet2CIDR",
+                        "PublicSubnet1CIDR",
+                        "PublicSubnet2CIDR",
+                        "RemoteAccessCIDR"
                     ]
                 },
                 {
@@ -31,7 +34,7 @@
 				},
 				{
 					"Label": {
-                        "default": "Database"
+                        "default": "Database Configuration"
                     },
                     "Parameters": [					
 						"DBName",
@@ -43,7 +46,7 @@
                 },
                 {
                     "Label": {
-                        "default": "Amazon EMR"
+                        "default": "Amazon EMR Configuration"
                     },
                     "Parameters": [
 						"CreateEmr",
@@ -52,9 +55,24 @@
 						"EmrCoreNodes",
 						"EmrLogBucket"
                     ]
+                },
+				{
+                    "Label": {
+                        "default": "Quick Start Configuration"
+                    },
+                    "Parameters": [
+                        "QSS3BucketName",
+                        "QSS3KeyPrefix"
+                    ]
                 }
             ],
             "ParameterLabels": {
+			    "QSS3BucketName": {
+                    "default": "Quick Start S3 Bucket"
+                },
+                "QSS3KeyPrefix": {
+                    "default": "Quick Start S3 Key Prefix"
+                },
                 "SolutionStackName": {
                     "default": "AWS Elastic Beanstalk technology stack"
                 },
@@ -106,22 +124,45 @@
                 "EmrLogBucket": {
                     "default": "Amazon EMR Log Bucket"
                 },
-                "VpcId": {
-                    "default": "VPC ID"
+				"AvailabilityZones": {
+                    "default": "Availability Zones"
                 },
-                "PublicSubnetIds": {
-                    "default": "Public Subnet Ids"
+                "PrivateSubnet1CIDR": {
+                    "default": "Private Subnet 1 CIDR"
                 },
-                "PrivateSubnetIds": {
-                    "default": "Private Subnet Ids"
+                "PrivateSubnet2CIDR": {
+                    "default": "Private Subnet 2 CIDR"
+                },
+                "PublicSubnet1CIDR": {
+                    "default": "Public Subnet 1 CIDR"
+                },
+                "PublicSubnet2CIDR": {
+                    "default": "Public Subnet 2 CIDR"
                 },
 				"RemoteAccessCIDR": {
                     "default": "Remote Access CIDR"
+                },
+				"VPCCIDR": {
+                    "default": "VPC CIDR"
                 }
 			}
 		}
 	},
     "Parameters": {
+			"QSS3BucketName": {
+            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
+            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
+            "Default": "quickstart-reference",
+            "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
+            "Type": "String"
+        },
+        "QSS3KeyPrefix": {
+            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
+            "Default": "datalake/cognizant/jupiter/latest/",
+            "Description": "The S3 key name prefix used to simulate a folder for your copy of Quick Start assets, if you decide to customize or extend the Quick Start for your own use. This prefix can include numbers, lowercase letters, uppercase letters, hyphens, and forward slashes",
+            "Type": "String"
+        },
         "SolutionStackName": {
             "AllowedValues": ["64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 8 Java 8", "64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 7 Java 7", "64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 7 Java 6"],
             "ConstraintDescription": "Must be a valid and supported technology stack on AWS Elastic Beanstalk",
@@ -162,7 +203,8 @@
         "JupiterSSLCert": {
             "Description": "ARN of the SSL certificate for terminating HTTPS connections on the load balancer; leave this blank to disable SSL, however it is strongly recommended to turn on SSL in production environments",
             "Type": "String",
-			"Default": ""
+			"Default": "",
+			"ConstraintDescription": "Leave blank to disable SSL"
         },
         "DBName": {
             "Default": "jupiterdb",
@@ -258,7 +300,7 @@
             "Description": "Type of Amazon RDS instance",
             "Type": "String",
             "Default": "mysql",
-            "AllowedValues": [ "mysql" ]
+            "AllowedValues": [ "mysql", "postgres" ]
         },
         "DbClass": {
             "Description": "Instance class of Amazon RDS instance",
@@ -370,17 +412,44 @@
             "Type": "Number",
 			"Default": "1"
         },
-        "VpcId": {
-            "Description": "ID of the existing VPC where the AWS resources will be deployed through the CloudFormation templates",
-            "Type": "AWS::EC2::VPC::Id"
+        "AvailabilityZones": {
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved and only 2 AZs are used for this deployment.",
+            "Type": "List<AWS::EC2::AvailabilityZone::Name>"
         },
-        "PublicSubnetIds": {
-        	"Description": "IDs of Public Subnets in the existing VPC; select at least one subnet",
-        	"Type": "List<AWS::EC2::Subnet::Id>"
+		"PrivateSubnet1CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.0.0/19",
+            "Description": "CIDR block for private subnet 1 located in Availability Zone 1.",
+            "Type": "String"
         },
-        "PrivateSubnetIds": {
-        	"Description": "IDs of Private Subnets in the existing VPC; select at least two subnets",
-        	"Type": "List<AWS::EC2::Subnet::Id>"
+        "PrivateSubnet2CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.32.0/19",
+            "Description": "CIDR block for private subnet 2 located in Availability Zone 2.",
+            "Type": "String"
+        },
+        "PublicSubnet1CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.128.0/20",
+            "Description": "CIDR Block for the public DMZ subnet 1 located in Availability Zone 1",
+            "Type": "String"
+        },
+        "PublicSubnet2CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.144.0/20",
+            "Description": "CIDR Block for the public DMZ subnet 2 located in Availability Zone 2",
+            "Type": "String"
+        },
+		"VPCCIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.0.0/16",
+            "Description": "CIDR Block for the VPC",
+            "Type": "String"
         },
 		"RemoteAccessCIDR": {
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
@@ -473,768 +542,170 @@
 			]
 		}
 	},
-	"Resources": {
-		"JupiterBootstrapDownloadPolicy": {
-			"Type" : "AWS::IAM::Policy",
-			"Properties": {
-				"PolicyName": {
-					"Fn::Join": [
-						"-",
-						[
-							{ "Ref": "AWS::StackName" },
-							"JupiterBootstrapDownloadPolicy"
-						]
-					]
-				},
-				"Roles": [ "EMR_DefaultRole" ],
-				"PolicyDocument" : {
-					"Version" : "2012-10-17",
-					"Statement":[
-						{
-							"Effect": "Allow",
-							"Action": [ "s3:GetObject" ],
-							"Resource": [ { "Fn::Sub": "arn:aws:s3:::${WarS3Bucket}/*" } ]
-						}
-					]
-				}
-			}
-		},
-		"JupiterIAMRole": {
-			"Type": "AWS::IAM::Role",
+	
+	 "Resources": {
+        "VPCStack": {
+            "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Statement": [
-                        {
-                            "Action": [ "sts:AssumeRole" ],
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [ "ec2.amazonaws.com" ]
-                            }
-                        }
-                    ],
-                    "Version": "2012-10-17"
+                "TemplateURL": {
+                    "Fn::Sub": "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template"
                 },
-				"ManagedPolicyArns": [
-					"arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
-					"arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier",
-					"arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker",
-					"arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials",
-					"arn:aws:iam::aws:policy/AWSCertificateManagerReadOnly"
-				],
-                "Policies": [
-                    {
-                        "PolicyName":"WarAccess",
-                        "PolicyDocument":{
-                            "Statement":[
+                "Parameters": {
+                    "AvailabilityZones": {
+                        "Fn::Join": [
+                            ",",
+                            {
+                                "Ref": "AvailabilityZones"
+                            }
+                        ]
+                    },
+                    "KeyPairName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "NumberOfAZs": "2",
+                    "PrivateSubnet1ACIDR": {
+                        "Ref": "PrivateSubnet1CIDR"
+                    },
+                    "PrivateSubnet2ACIDR": {
+                        "Ref": "PrivateSubnet2CIDR"
+                    },
+                    "PublicSubnet1CIDR": {
+                        "Ref": "PublicSubnet1CIDR"
+                    },
+                    "PublicSubnet2CIDR": {
+                        "Ref": "PublicSubnet2CIDR"
+                    },
+                    "VPCCIDR": {
+                        "Ref": "VPCCIDR"
+                    }
+                }
+            }
+        },
+		
+		 "JupiterStack": {
+            "DependsOn": "VPCStack",
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jupiter.template"
+                },
+                "Parameters": {
+                    "VpcId": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.VPCID"
+                        ]
+                    },
+                    "PublicSubnetIds": {
+                        "Fn::Join": [
+                            ",",
+                            [
                                 {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "s3:ListBucket"
-                                    ],
-                                    "Resource": [
-                                        { "Fn::Sub": "arn:aws:s3:::${WarS3Bucket}" }
+                                    "Fn::GetAtt": [
+                                        "VPCStack",
+                                        "Outputs.PublicSubnet1ID"
                                     ]
                                 },
                                 {
-                                    "Action": [
-                                        "s3:GetObject"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": [
-                                        { "Fn::Sub": "arn:aws:s3:::${WarS3Bucket}/*" }
+                                    "Fn::GetAtt": [
+                                        "VPCStack",
+                                        "Outputs.PublicSubnet2ID"
                                     ]
                                 }
                             ]
-                        }
+                        ]
+                    },
+                    "PrivateSubnetIds": {
+                        "Fn::Join": [
+                            ",",
+                            [
+                                {
+                                    "Fn::GetAtt": [
+                                        "VPCStack",
+                                        "Outputs.PrivateSubnet1AID"
+                                    ]
+                                },
+                                {
+                                    "Fn::GetAtt": [
+                                        "VPCStack",
+                                        "Outputs.PrivateSubnet2AID"
+                                    ]
+                                }
+                            ]
+                        ]
+                    },
+                    "RemoteAccessCIDR": {
+                        "Ref": "RemoteAccessCIDR"
+                    },
+                    "KeyPairName": {
+                        "Ref": "KeyPairName"
+                    },
+					"SolutionStackName": {
+                        "Ref": "SolutionStackName"
+                    },
+					"WarS3Bucket": {
+                        "Ref": "WarS3Bucket"
+                    },
+					"WarS3Key": {
+                        "Ref": "WarS3Key"
+                    },
+					"JupiterSSLCert": {
+                        "Ref": "JupiterSSLCert"
+                    },
+					"JupiterInstanceType": {
+                        "Ref": "JupiterInstanceType"
+                    },
+					"EmrBootstrapKey": {
+                        "Ref": "EmrBootstrapKey"
+                    },
+					"DBName": {
+                        "Ref": "DBName"
+                    },
+					"DbEngine": {
+                        "Ref": "DbEngine"
+                    },
+					"DbClass": {
+                        "Ref": "DbClass"
+                    },
+					"MasterDBUser": {
+                        "Ref": "MasterDBUser"
+                    },
+					"MasterDBPassword": {
+                        "Ref": "MasterDBPassword"
+                    },
+                    "CreateEmr": {
+                        "Ref": "CreateEmr"
+                    },
+                    "EmrMasterInstanceType": {
+                        "Ref": "EmrMasterInstanceType"
+                    },
+                    "EmrCoreInstanceType": {
+                        "Ref": "EmrCoreInstanceType"
+                    },
+                    "EmrCoreNodes": {
+                        "Ref": "EmrCoreNodes"
+                    },
+                    "EmrLogBucket": {
+                        "Ref": "EmrLogBucket"
+                    },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
                     }
-				]
-			}
-		},
-		"DBSubnetGroup" : {
-			"Type" : "AWS::RDS::DBSubnetGroup",
-			"Properties" : {
-				"SubnetIds" : {  "Ref": "PrivateSubnetIds" },
-				"DBSubnetGroupDescription" : "JUPITER database subnet group"
-			}
-		},
-        "JupiterSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "VpcId": { "Ref": "VpcId" },
-                "GroupDescription": "Allow access to Jupiter application from remote access CIDR",
-				"SecurityGroupIngress": [
-                    {
-						"IpProtocol" : "tcp",
-						"FromPort" : "80",
-						"ToPort" : "80",
-						"CidrIp" : { "Ref": "RemoteAccessCIDR" }
-                    },
-                    {
-						"IpProtocol" : "tcp",
-						"FromPort" : "443",
-						"ToPort" : "443",
-						"CidrIp" : { "Ref": "RemoteAccessCIDR" }
-                    }										
-				]
-            }
-        },
-        "JupiterEC2SecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-			"DependsOn": "JupiterSecurityGroup",
-            "Properties": {
-                "VpcId": { "Ref": "VpcId" },
-                "GroupDescription": "Allow access to Jupiter EC2 instances from the ELB",
-				"SecurityGroupIngress": [
-                    {
-						"IpProtocol" : "tcp",
-						"FromPort" : "80",
-						"ToPort" : "80",
-						"SourceSecurityGroupId" : { "Ref" : "JupiterSecurityGroup" }
-                    },
-                    {
-						"IpProtocol" : "tcp",
-						"FromPort" : "443",
-						"ToPort" : "443",
-						"SourceSecurityGroupId" : { "Ref" : "JupiterSecurityGroup" }
-                    }										
-				]
-            }
-        },
-        "JupiterInstanceProfile": {
-            "Type": "AWS::IAM::InstanceProfile",
-            "Properties": {
-                "Roles": [ { "Ref": "JupiterIAMRole" } ]
-            }
-        },
-		"JupiterBeanstalk": {
-			"Type" : "AWS::ElasticBeanstalk::Application",
-			"Properties" : {
-				"ApplicationName" : {
-					"Fn::Join": [
-						"-",
-						[
-							{ "Ref": "AWS::StackName" },
-							"JupiterBeanstalk"
-						]
-					]
-				},
-				"Description" : "AWS Elastic Beanstalk for JUPITER"
-			}
-		},
-		"JupiterVersion" :{ 
-			"Type" : "AWS::ElasticBeanstalk::ApplicationVersion",
-			"Properties" : {
-				"ApplicationName" : { "Ref" : "JupiterBeanstalk" },
-				"Description" : "JUPITER continuous testing",
-				"SourceBundle" : {
-					"S3Bucket" : { "Ref" : "WarS3Bucket" },
-					"S3Key" : { "Ref" : "WarS3Key" }
-				} 
-			}
-		},
-		"JupiterConfigurationTemplate": {
-			"Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
-			"DependsOn": [ "JupiterDBInstance", "JupiterSecurityGroup" ],
-			"Properties": {
-				"ApplicationName": { "Ref": "JupiterBeanstalk" },
-				"Description": "JUPITER Configuration Template",				
-				"SolutionStackName": { "Ref" : "SolutionStackName" },
-				"OptionSettings": {
-					"Fn::If": [ "NoSSL",
-						[
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "VPCId",
-								"Value" : { "Ref" : "VpcId" }				
-							},
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "ELBSubnets",
-								"Value" : { "Fn::Join": [ ",", {  "Ref": "PublicSubnetIds" } ] }				
-							},
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "Subnets",
-								"Value" : { "Fn::Join": [ ",", {  "Ref": "PrivateSubnetIds" } ] }				
-							},
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "DBSubnets",
-								"Value" : { "Fn::Join": [ ",", {  "Ref": "PrivateSubnetIds" } ] }				
-							},
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "AssociatePublicIpAddress",
-								"Value" : "false"				
-							},
-							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
-								"OptionName" : "EC2KeyName",
-								"Value" : { "Ref" : "KeyPairName" }				
-							},
-							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
-								"OptionName" : "InstanceType",
-								"Value" : { "Ref" : "JupiterInstanceType" }				
-							},
-							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
-								"OptionName" : "IamInstanceProfile",
-								"Value" : { "Fn::GetAtt" : ["JupiterInstanceProfile", "Arn"] }				
-							},
-							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
-								"OptionName" : "SecurityGroups",
-								"Value" : { "Ref" : "JupiterEC2SecurityGroup" }				
-							},
-							{
-								"Namespace" : "aws:autoscaling:asg",
-								"OptionName" : "MinSize",
-								"Value" : "1"				
-							},
-							{
-								"Namespace" : "aws:autoscaling:asg",
-								"OptionName" : "MaxSize",
-								"Value" : "1"				
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:environment",
-								"OptionName" : "ServiceRole",
-								"Value" : "aws-elasticbeanstalk-service-role"				
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:environment",
-								"OptionName" : "LoadBalancerType",
-								"Value" : "classic"				
-							},
-							{
-								"Namespace" : "aws:elb:loadbalancer",
-								"OptionName" : "SecurityGroups",
-								"Value" : { "Ref" : "JupiterSecurityGroup" }				
-							},
-							{
-								"Namespace" : "aws:elb:loadbalancer",
-								"OptionName" : "ManagedSecurityGroup",
-								"Value" : { "Ref" : "JupiterSecurityGroup" }				
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:application:environment",
-								"OptionName" : "RDS_USERNAME",
-								"Value" : { "Ref": "MasterDBUser" }
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:application:environment",
-								"OptionName" : "RDS_PASSWORD",
-								"Value" : { "Ref": "MasterDBPassword" }
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:application:environment",
-								"OptionName" : "JDBC_CONNECTION_STRING",
-								"Value" : {
-									"Fn::Join": [
-										"",
-										[
-											"jdbc:mysql://",
-											{
-												"Fn::GetAtt": [
-													"JupiterDBInstance",
-													"Endpoint.Address"
-												]
-											},
-											":",
-											{
-												"Fn::GetAtt": [
-													"JupiterDBInstance",
-													"Endpoint.Port"
-												]
-											},
-											"/",
-											{
-												"Ref": "DBName"
-											}
-										]
-									]
-								}				
-							}
-						],					
-						[
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "VPCId",
-								"Value" : { "Ref" : "VpcId" }				
-							},
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "ELBSubnets",
-								"Value" : { "Fn::Join": [ ",", {  "Ref": "PublicSubnetIds" } ] }				
-							},
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "Subnets",
-								"Value" : { "Fn::Join": [ ",", {  "Ref": "PrivateSubnetIds" } ] }				
-							},
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "DBSubnets",
-								"Value" : { "Fn::Join": [ ",", {  "Ref": "PrivateSubnetIds" } ] }				
-							},
-							{
-								"Namespace" : "aws:ec2:vpc",
-								"OptionName" : "AssociatePublicIpAddress",
-								"Value" : "false"				
-							},
-							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
-								"OptionName" : "EC2KeyName",
-								"Value" : { "Ref" : "KeyPairName" }				
-							},
-							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
-								"OptionName" : "InstanceType",
-								"Value" : { "Ref" : "JupiterInstanceType" }				
-							},
-							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
-								"OptionName" : "IamInstanceProfile",
-								"Value" : { "Fn::GetAtt" : ["JupiterInstanceProfile", "Arn"] }				
-							},
-							{
-								"Namespace" : "aws:autoscaling:launchconfiguration",
-								"OptionName" : "SecurityGroups",
-								"Value" : { "Ref" : "JupiterEC2SecurityGroup" }				
-							},
-							{
-								"Namespace" : "aws:autoscaling:asg",
-								"OptionName" : "MinSize",
-								"Value" : "1"				
-							},
-							{
-								"Namespace" : "aws:autoscaling:asg",
-								"OptionName" : "MaxSize",
-								"Value" : "1"				
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:environment",
-								"OptionName" : "ServiceRole",
-								"Value" : "aws-elasticbeanstalk-service-role"				
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:environment",
-								"OptionName" : "LoadBalancerType",
-								"Value" : "classic"				
-							},
-							{
-								"Namespace" : "aws:elb:loadbalancer",
-								"OptionName" : "SecurityGroups",
-								"Value" : { "Ref" : "JupiterSecurityGroup" }				
-							},
-							{
-								"Namespace" : "aws:elb:loadbalancer",
-								"OptionName" : "ManagedSecurityGroup",
-								"Value" : { "Ref" : "JupiterSecurityGroup" }				
-							},
-							{
-								"Namespace" : "aws:elb:loadbalancer",
-								"OptionName" : "LoadBalancerHTTPSPort",
-								"Value" : "443"				
-							},
-							{
-								"Namespace" : "aws:elb:loadbalancer",
-								"OptionName" : "LoadBalancerSSLPortProtocol",
-								"Value" : "HTTPS"				
-							},
-							{
-								"Namespace" : "aws:elb:loadbalancer",
-								"OptionName" : "SSLCertificateId",
-								"Value" : { "Ref" : "JupiterSSLCert" }				
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:application:environment",
-								"OptionName" : "RDS_USERNAME",
-								"Value" : { "Ref": "MasterDBUser" }
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:application:environment",
-								"OptionName" : "RDS_PASSWORD",
-								"Value" : { "Ref": "MasterDBPassword" }
-							},
-							{
-								"Namespace" : "aws:elasticbeanstalk:application:environment",
-								"OptionName" : "JDBC_CONNECTION_STRING",
-								"Value" : {
-									"Fn::Join": [
-										"",
-										[
-											"jdbc:mysql://",
-											{
-												"Fn::GetAtt": [
-													"JupiterDBInstance",
-													"Endpoint.Address"
-												]
-											},
-											":",
-											{
-												"Fn::GetAtt": [
-													"JupiterDBInstance",
-													"Endpoint.Port"
-												]
-											},
-											"/",
-											{
-												"Ref": "DBName"
-											}
-										]
-									]
-								}				
-							}
-						]
-					]
-				}
-			}
-		},
-		"JupiterEnvironment": {
-			"Type": "AWS::ElasticBeanstalk::Environment",
-			"Properties": {
-				"ApplicationName": { "Ref": "JupiterBeanstalk" },
-				"EnvironmentName" :  {
-					"Fn::Join": [
-						"-",
-						[
-							{ "Ref": "AWS::StackName" },
-							"JupiterEnvironment"
-						]
-					]
-				},
-				"Description": "JUPITER Environment",
-				"TemplateName": { "Ref": "JupiterConfigurationTemplate" },
-				"VersionLabel": { "Ref": "JupiterVersion" },
-				"Tier": {
-					"Type": "Standard",
-					"Name": "WebServer"
-				}
-			}
-		},
-        "JupiterDBSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-			"DependsOn": "JupiterEC2SecurityGroup",
-            "Properties": {
-                "VpcId": { "Ref": "VpcId" },
-                "GroupDescription": "Allow access to DB from Autoscaling group",
-				"SecurityGroupIngress": [
-                    {
-						"IpProtocol" : "tcp",
-						"FromPort" : { "Fn::FindInMap": [ "DBOptions", { "Ref": "DbEngine" }, "TcpPort" ] },
-						"ToPort" : { "Fn::FindInMap": [ "DBOptions", { "Ref": "DbEngine" }, "TcpPort" ] },
-						"SourceSecurityGroupId" : { "Ref" : "JupiterEC2SecurityGroup" }
-                    }					
-				]
-            }
-        },
-        "JupiterDBInstance": {
-            "Type": "AWS::RDS::DBInstance",
-            "DependsOn": [ "DBSubnetGroup", "JupiterDBSecurityGroup" ],
-			"DeletionPolicy": "Delete",
-            "Properties": {
-				"DBName": {
-                    "Ref": "DBName"
-                },
-                "Engine": { "Ref": "DbEngine" },
-                "AllocatedStorage": "20",
-                "DBInstanceClass": { "Ref": "DbClass" },
-                "DBSubnetGroupName": { "Ref": "DBSubnetGroup" },
-				"VPCSecurityGroups": [{ "Ref": "JupiterDBSecurityGroup" }],
-                "MasterUsername": { "Ref": "MasterDBUser" },
-                "MasterUserPassword": { "Ref": "MasterDBPassword" }
-            }
-        },
-        "EmrMasterPrivateSecurityGroup": {
-        	"Condition": "CreateEmrCondition",
-			"Type": "AWS::EC2::SecurityGroup",
-        	"Properties": {
-        		"GroupDescription": "Amazon EMR Master Instance security group",
-        		"VpcId": {
-                    "Ref": "VpcId"
                 }
-        	}
-        },
-        "EmrSlavePrivateSecurityGroup": {
-        	"Condition": "CreateEmrCondition",
-			"Type": "AWS::EC2::SecurityGroup",
-        	"Properties": {
-        		"GroupDescription": "Amazon EMR Slave Instance security group",
-        		"VpcId": {
-                    "Ref": "VpcId"
-                }
-        	}
-        },
-        "EmrServiceAccessSecurityGroup": {
-        	"Condition": "CreateEmrCondition",
-			"Type": "AWS::EC2::SecurityGroup",
-        	"Properties": {
-        		"GroupDescription": "Amazon EMR Service Access security group",
-        		"VpcId": {
-                    "Ref": "VpcId"
-                }
-        	}
-        },
-        "TCPFromServiceAccessSecurityGroupIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "8443",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "tcp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrServiceAccessSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "8443"
-		  	}
-		},
-        "TCPFromSlaveSecurityGroupIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "0",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "tcp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "65535"
-		  	}
-		},
-		"TCPFromMasterSecurityGroupIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "0",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "tcp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "65535"
-		  	}
-		},
-		"ICMPFromSlaveSecurityGroupIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "-1",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "icmp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "-1"
-		  	}
-		},
-        "ICMPFromMasterSecurityGroupIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "-1",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "icmp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "-1"
-		  	}
-		},
-        "UDPFromSlaveSecurityGroupIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "0",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "udp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "65535"
-		  	}
-		},
-		"UDPFromMasterSecurityGroupIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "0",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "udp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "65535"
-		  	}
-		},
-        "TCPFromServiceAccessIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "8443",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "tcp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrServiceAccessSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "8443"
-		  	}
-		},
-        "TCPFromSlaveIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "0",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "tcp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "65535"
-		  	}
-		},
-		"TCPFromMasterIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "0",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "tcp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "65535"
-		  	}
-		},
-		"ICMPFromSlaveIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "-1",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "icmp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "-1"
-		  	}
-		},
-        "ICMPFromMasterIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "-1",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ]  },
-		    	"IpProtocol" : "icmp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "-1"
-		  	}
-		},
-        "UDPFromSlaveIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "0",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ]  },
-		    	"IpProtocol" : "udp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "65535"
-		  	}
-		},
-		"UDPFromMasterIngress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupIngress",
-		  	"Properties" : {
-		    	"FromPort" : "0",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ]  },
-		    	"IpProtocol" : "udp",
-		    	"SourceSecurityGroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "65535"
-		  	}
-		},
-        "TCPMasterEgress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupEgress",
-		  	"Properties" : {
-		    	"FromPort" : "8443",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrServiceAccessSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "tcp",
-		    	"DestinationSecurityGroupId" : { "Fn::GetAtt": [ "EmrMasterPrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "8443"
-		  	}
-		},
-        "TCPSlaveEgress": {
-		  	"Condition": "CreateEmrCondition",
-			"Type" : "AWS::EC2::SecurityGroupEgress",
-		  	"Properties" : {
-		    	"FromPort" : "8443",
-		    	"GroupId" : { "Fn::GetAtt": [ "EmrServiceAccessSecurityGroup", "GroupId" ] },
-		    	"IpProtocol" : "tcp",
-		    	"DestinationSecurityGroupId" : { "Fn::GetAtt": [ "EmrSlavePrivateSecurityGroup", "GroupId" ] },
-		    	"ToPort" : "8443"
-		  	}
-		},
-        "RemoteAccessEmrSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Enable Amazon EMR remote access",
-                "VpcId": { "Ref": "VpcId" },
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
-                        "CidrIp": { "Ref": "RemoteAccessCIDR" }
-                    }
-                ]
             }
-        },
-		"JupiterEmr": {
-            "Type": "AWS::EMR::Cluster",
-            "Condition": "CreateEmrCondition",
-			"Properties": {
-				"BootstrapActions": [
-					{ 
-						"Name": "JUPITER_pre-requisites",
-						"ScriptBootstrapAction": { 
-							"Path": { 
-								"Fn::Join": [ "/", [ "s3:/", { "Ref": "WarS3Bucket" }, { "Ref": "EmrBootstrapKey" } ] ]
-							}
-						}
-					}
-				],
-                "Instances": {
-                    "MasterInstanceGroup": {
-                        "InstanceCount": 1,
-                        "InstanceType": { "Ref": "EmrMasterInstanceType" },
-                        "Market": "ON_DEMAND",
-                        "Name": "Master"
-                    },
-                    "CoreInstanceGroup": {
-                        "InstanceCount": { "Ref": "EmrCoreNodes" },
-                        "InstanceType": { "Ref": "EmrCoreInstanceType" },
-                        "Market": "ON_DEMAND",
-                        "Name": "Core"
-                    },
-                    "TerminationProtected": false,
-                    "Ec2SubnetId": { "Fn::Select" : [ "0", { "Fn::Split": [ ",", { "Fn::Join": [ ",", {  "Ref": "PrivateSubnetIds" } ] } ] } ] },
-                    "Ec2KeyName": { "Ref": "KeyPairName" },
-					"EmrManagedMasterSecurityGroup": { "Ref":"EmrMasterPrivateSecurityGroup" },
-					"EmrManagedSlaveSecurityGroup": { "Ref":"EmrSlavePrivateSecurityGroup" },
-					"ServiceAccessSecurityGroup": { "Ref":"EmrServiceAccessSecurityGroup" },
-                    "AdditionalMasterSecurityGroups": [
-                        { "Ref": "RemoteAccessEmrSecurityGroup" }
-                    ]
-                },
-                "Applications": [
-                    { "Name": "Hadoop" },
-                    { "Name": "Hive" },
-                    { "Name": "Pig" },
-					{ "Name": "Hue" },
-                    { "Name": "Spark" }
-                ],
-				"LogUri": { "Fn::Join": [ "/", [ "s3:/", { "Ref": "EmrLogBucket" } ] ] },
-                "ReleaseLabel": {
-                    "Fn::FindInMap": [
-                        "RegionMap",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "EmrVersion"
-                    ]
-                },
-                "Name": "JupiterEmr",
-                "JobFlowRole": "EMR_EC2_DefaultRole",
-                "ServiceRole": "EMR_DefaultRole",
-                "VisibleToAllUsers": true
-			}
-		}
-    },
+        }
+		
+		},
+	
     "Outputs": {
         "JupiterAppEndpoint": {
             "Value": { 
 				"Fn::If": [ "NoSSL",
-					{ "Fn::Join": [ "/", [ "http:/", { "Fn::GetAtt" : ["JupiterEnvironment", "EndpointURL" ] } ] ] },
-					{ "Fn::Join": [ "/", [ "https:/", { "Fn::GetAtt" : ["JupiterEnvironment", "EndpointURL" ] } ] ] }
+					{ "Fn::Join": [ "/", [ "http:/", { "Fn::GetAtt" : ["JupiterStack", "Outputs.JupiterAppEndpoint" ] } ] ] },
+					{ "Fn::Join": [ "/", [ "https:/", { "Fn::GetAtt" : ["JupiterStack", "Outputs.JupiterAppEndpoint" ] } ] ] }
 				]
 			},
             "Description": "JUPITER Application URL",
@@ -1243,7 +714,7 @@
 			}
         },
         "JupiterDBEndpoint": {
-            "Value": { "Fn::GetAtt": [ "JupiterDBInstance", "Endpoint.Address" ] },
+            "Value": { "Fn::GetAtt": [ "JupiterStack", "Outputs.JupiterDBEndpoint" ] },
             "Description": "Database endpoint hostname",
             "Export": {
 				"Name":{ "Fn::Sub": "${AWS::StackName}:JupiterDBEndpoint" }
@@ -1251,7 +722,7 @@
         },
         "JupiterEmr": {
 			"Condition": "CreateEmrCondition",
-            "Value": { "Fn::GetAtt": [ "JupiterEmr", "MasterPublicDNS" ] },
+            "Value": { "Fn::GetAtt": [ "JupiterStack", "Outputs.JupiterEmr" ] },
 			"Description": "Amazon EMR master node endpoint",
             "Export": { "Name":{ "Fn::Sub": "${AWS::StackName}:JupiterEmr" } }
         }
