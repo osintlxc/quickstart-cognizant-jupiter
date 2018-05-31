@@ -169,7 +169,7 @@
         "EmrLogBucket": {
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
             "ConstraintDescription": "S3 bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Description": "S3 bucket name for the Amazon EMR logs. This bucket must be in the same region where this stack is being deployed. Bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
+            "Description": "S3 bucket used to store the EMR logs. This bucket must be in the same region where this stack is being deployed. Bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
             "Type": "String"
         },
         "WarS3Key": {
