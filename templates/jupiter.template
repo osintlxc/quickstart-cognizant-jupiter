@@ -181,8 +181,7 @@
         "JupiterSSLCert": {
             "Description": "ARN of the SSL certificate for terminating HTTPS connections on the load balancer; leave this blank to disable SSL, however it is strongly recommended to turn on SSL in production environments",
             "Type": "String",
-			"Default": "",
-			"ConstraintDescription": "Leave blank to disable SSL"
+			"Default": ""
         },
         "DBName": {
             "Default": "jupiterdb",
