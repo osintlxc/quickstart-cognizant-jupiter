@@ -21,7 +21,6 @@
                     },
                     "Parameters": [
 						"SolutionStackName",
-						"WarS3Bucket",
 						"WarS3Key",
 						"KeyPairName",
 						"JupiterSSLCert",
@@ -72,9 +71,6 @@
                 },
                 "SolutionStackName": {
                     "default": "AWS Elastic Beanstalk technology stack"
-                },
-                "WarS3Bucket": {
-                    "default": "S3 Bucket holding the .war file for the web application"
                 },
                 "WarS3Key": {
                     "default": "S3 key of the .war file object"
@@ -156,12 +152,6 @@
             "ConstraintDescription": "Must be a valid and supported technology stack on AWS Elastic Beanstalk",
             "Default": "64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 8 Java 8",
             "Description": "AWS Elastic Beanstalk technology stack",
-            "Type": "String"
-        },
-        "WarS3Bucket": {
-            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
-            "ConstraintDescription": "S3 bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Description": "S3 bucket name for the JUPITER web application .war file. This bucket must be in the same region where this stack is being deployed. Bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
             "Type": "String"
         },
         "EmrLogBucket": {
@@ -523,7 +513,7 @@
 						{
 							"Effect": "Allow",
 							"Action": [ "s3:GetObject" ],
-							"Resource": [ { "Fn::Sub": "arn:aws:s3:::${WarS3Bucket}/*" } ]
+							"Resource": [ { "Fn::Sub": "arn:aws:s3:::${QSS3BucketName}/*" } ]
 						}
 					]
 				}
@@ -562,7 +552,7 @@
                                         "s3:ListBucket"
                                     ],
                                     "Resource": [
-                                        { "Fn::Sub": "arn:aws:s3:::${WarS3Bucket}" }
+                                        { "Fn::Sub": "arn:aws:s3:::${QSS3BucketName}" }
                                     ]
                                 },
                                 {
@@ -571,7 +561,7 @@
                                     ],
                                     "Effect": "Allow",
                                     "Resource": [
-                                        { "Fn::Sub": "arn:aws:s3:::${WarS3Bucket}/*" }
+                                        { "Fn::Sub": "arn:aws:s3:::${QSS3BucketName}/*" }
                                     ]
                                 }
                             ]
@@ -657,8 +647,8 @@
 				"ApplicationName" : { "Ref" : "JupiterBeanstalk" },
 				"Description" : "JUPITER continuous testing",
 				"SourceBundle" : {
-					"S3Bucket" : { "Ref" : "WarS3Bucket" },
-					"S3Key" : { "Ref" : "WarS3Key" }
+					"S3Bucket" : { "Ref" : "QSS3BucketName" },
+					"S3Key" : { "Fn::Join": [ "", [{  "Ref": "QSS3KeyPrefix" }, "assets/",{  "Ref": "WarS3Key" }  ]] }
 				} 
 			}
 		},
@@ -1207,7 +1197,7 @@
 						"Name": "JUPITER_pre-requisites",
 						"ScriptBootstrapAction": { 
 							"Path": { 
-								"Fn::Join": [ "/", [ "s3:/", { "Ref": "WarS3Bucket" }, { "Ref": "EmrBootstrapKey" } ] ]
+								"Fn::Join": [ "", [ "s3://", { "Ref": "QSS3BucketName" },"/",{ "Ref": "QSS3KeyPrefix" }, "scripts/", { "Ref": "EmrBootstrapKey" } ] ]
 							}
 						}
 					}

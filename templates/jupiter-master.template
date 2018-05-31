@@ -24,7 +24,6 @@
                     },
                     "Parameters": [
 						"SolutionStackName",
-						"WarS3Bucket",
 						"WarS3Key",
 						"KeyPairName",
 						"JupiterSSLCert",
@@ -75,9 +74,6 @@
                 },
                 "SolutionStackName": {
                     "default": "AWS Elastic Beanstalk technology stack"
-                },
-                "WarS3Bucket": {
-                    "default": "S3 Bucket holding the .war file for the web application"
                 },
                 "WarS3Key": {
                     "default": "S3 key of the .war file object"
@@ -168,12 +164,6 @@
             "ConstraintDescription": "Must be a valid and supported technology stack on AWS Elastic Beanstalk",
             "Default": "64bit Amazon Linux 2017.09 v2.7.6 running Tomcat 8 Java 8",
             "Description": "AWS Elastic Beanstalk technology stack",
-            "Type": "String"
-        },
-        "WarS3Bucket": {
-            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
-            "ConstraintDescription": "S3 bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Description": "S3 bucket name for the JUPITER web application .war file. This bucket must be in the same region where this stack is being deployed. Bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
             "Type": "String"
         },
         "EmrLogBucket": {
@@ -642,9 +632,6 @@
                     },
 					"SolutionStackName": {
                         "Ref": "SolutionStackName"
-                    },
-					"WarS3Bucket": {
-                        "Ref": "WarS3Bucket"
                     },
 					"WarS3Key": {
                         "Ref": "WarS3Key"
