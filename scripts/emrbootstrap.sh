@@ -1,6 +1,6 @@
 #!/bin/bash -x
-MAVEN_SRC_TARBALL='http://www-us.apache.org/dist/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz'
-MAVEN_SRC_SIGNATURE='https://www.apache.org/dist/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz.asc'
+MAVEN_SRC_TARBALL='http://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.3/apache-maven-3.5.3-bin.tar.gz'
+MAVEN_SRC_SIGNATURE='https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.3/apache-maven-3.5.3-bin.tar.gz.asc'
 MAVEN_DIR='/opt/maven'
 MAVEN_DEST_TARBALL="${MAVEN_DIR}/apache-maven-bin.tar.gz"
 MAVEN_DEST_SIGNATURE="${MAVEN_DIR}/apache-maven-bin.tar.gz.asc"
@@ -43,7 +43,7 @@ else
 	echo 'Could not verify GPG signature, exiting'
 	exit 1
 fi
-MAVEN_BIN="${MAVEN_DIR}/apache-maven-3.5.2/bin"
+MAVEN_BIN="${MAVEN_DIR}/apache-maven-3.5.3/bin"
 echo "export JAVA_HOME=${JAVA8_SDK_HOME}" >> ${HOME}/.bashrc
 echo 'export PATH=$PATH:'${MAVEN_BIN} >> ${HOME}/.bashrc
 source $HOME/.bashrc
