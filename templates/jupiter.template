@@ -21,11 +21,9 @@
                     },
                     "Parameters": [
 						"SolutionStackName",
-						"WarS3Key",
 						"KeyPairName",
 						"JupiterSSLCert",
-						"JupiterInstanceType",
-						"EmrBootstrapKey"
+						"JupiterInstanceType"
 					]
 				},
 				{
@@ -71,12 +69,6 @@
                 },
                 "SolutionStackName": {
                     "default": "AWS Elastic Beanstalk technology stack"
-                },
-                "WarS3Key": {
-                    "default": "S3 key of the .war file object"
-                },
-                "EmrBootstrapKey": {
-                    "default": "S3 key of the Amazon EMR bootstrap script"
                 },
                 "KeyPairName": {
                     "default": "Key Pair Name"
@@ -157,21 +149,7 @@
         "EmrLogBucket": {
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
             "ConstraintDescription": "S3 bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Description": "S3 bucket that will be used to store EMR logs. This bucket must be in the same region where this stack is being deployed. Bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Type": "String"
-        },
-        "WarS3Key": {
-            "AllowedPattern": "^[0-9a-zA-Z-.]*$",
-            "ConstraintDescription": "S3 key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
-            "Default": "jupiter.war",
-            "Description": "S3 key for the JUPITER web application .war file. S3 key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
-            "Type": "String"
-        },
-        "EmrBootstrapKey": {
-            "AllowedPattern": "^[0-9a-zA-Z-.]*$",
-            "ConstraintDescription": "S3 key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
-            "Default": "emrbootstrap.sh",
-            "Description": "S3 key for the Amazon EMR bootstrap script file. This object must be on the same bucket as the web application .war file. S3 key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
+            "Description": "S3 bucket that will be used to store EMR logs. Only needed if EMR will be used.  This bucket must be in the same region where this stack is being deployed. Bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
             "Type": "String"
         },
         "KeyPairName": {
@@ -647,7 +625,7 @@
 				"Description" : "JUPITER continuous testing",
 				"SourceBundle" : {
 					"S3Bucket" : { "Ref" : "QSS3BucketName" },
-					"S3Key" : { "Fn::Join": [ "", [{  "Ref": "QSS3KeyPrefix" }, "assets/",{  "Ref": "WarS3Key" }  ]] }
+					"S3Key" : { "Fn::Join": [ "", [{  "Ref": "QSS3KeyPrefix" }, "assets/jupiter.war"  ]] }
 				} 
 			}
 		},
@@ -1196,7 +1174,7 @@
 						"Name": "JUPITER_pre-requisites",
 						"ScriptBootstrapAction": { 
 							"Path": { 
-								"Fn::Join": [ "", [ "s3://", { "Ref": "QSS3BucketName" },"/",{ "Ref": "QSS3KeyPrefix" }, "scripts/", { "Ref": "EmrBootstrapKey" } ] ]
+								"Fn::Join": [ "", [ "s3://", { "Ref": "QSS3BucketName" },"/",{ "Ref": "QSS3KeyPrefix" }, "scripts/emrbootstrap.sh" ] ]
 							}
 						}
 					}
