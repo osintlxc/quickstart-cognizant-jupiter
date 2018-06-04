@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "This templates creates a stack for JUPITER",
+    "Description": "This templates deploys a stack for JUPITER in a new VPC. This template provisions all of the resources that are specific to the Quick Start. Leveraged Quick Starts (VPC, LinuxBastion). **WARNING** You will be billed for the AWS resources used if you create a stack from this template. (qs-1ogq8r0ml)",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
@@ -140,14 +140,14 @@
 			"QSS3BucketName": {
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
             "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Default": "quickstart-reference",
+            "Default": "aws-quickstart",
             "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
             "Type": "String"
         },
         "QSS3KeyPrefix": {
             "AllowedPattern": "^[0-9a-zA-Z-/]*$",
             "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
-            "Default": "datalake/cognizant/jupiter/latest/",
+            "Default": "quickstart-cognizant-jupiter/",
             "Description": "The S3 key name prefix used to simulate a folder for your copy of Quick Start assets, if you decide to customize or extend the Quick Start for your own use. This prefix can include numbers, lowercase letters, uppercase letters, hyphens, and forward slashes",
             "Type": "String"
         },
@@ -495,8 +495,7 @@
                 }
             }
         },
-		
-		 "JupiterStack": {
+		"JupiterStack": {
             "DependsOn": "VPCStack",
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
