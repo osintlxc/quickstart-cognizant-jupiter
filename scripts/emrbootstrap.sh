@@ -1,5 +1,5 @@
 #!/bin/bash -x
-MAVEN_SRC_TARBALL='http://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.3/apache-maven-3.5.3-bin.tar.gz'
+MAVEN_SRC_TARBALL='https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.3/apache-maven-3.5.3-bin.tar.gz'
 MAVEN_SRC_SIGNATURE='https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.3/apache-maven-3.5.3-bin.tar.gz.asc'
 MAVEN_DIR='/opt/maven'
 MAVEN_DEST_TARBALL="${MAVEN_DIR}/apache-maven-bin.tar.gz"
