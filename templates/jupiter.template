@@ -561,9 +561,11 @@
                                     ],
                                     "Resource": [
                                         {
-                                            "Fn::Sub": "arn:aws:s3:::${QSS3BucketName}"
+                                         "Fn::Join": ["",[
+										"arn:aws:s3:::jupiterqs-",
+										{"Ref": "AWS::Region"}]]
                                         }
-                                    ]
+										]
                                 },
                                 {
                                     "Action": [
@@ -572,9 +574,12 @@
                                     "Effect": "Allow",
                                     "Resource": [
                                         {
-                                            "Fn::Sub": "arn:aws:s3:::${QSS3BucketName}/*"
+                                         "Fn::Join": ["",[
+										"arn:aws:s3:::jupiterqs-",
+										{"Ref": "AWS::Region"},
+										"/*"]]
                                         }
-                                    ]
+										]
                                 }
                             ]
                         }
@@ -681,20 +686,12 @@
                 },
                 "Description": "JUPITER continuous testing",
                 "SourceBundle": {
-                    "S3Bucket": {
-                        "Ref": "QSS3BucketName"
+                    "S3Bucket": {                       
+                                         "Fn::Join": ["",[
+										"jupiterqs-",
+										{"Ref": "AWS::Region"}]]                                        
                     },
-                    "S3Key": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "assets/jupiter.war"
-                            ]
-                        ]
-                    }
+                    "S3Key": "jupiter.war"
                 }
             }
         },
