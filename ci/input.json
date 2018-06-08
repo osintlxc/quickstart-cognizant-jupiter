@@ -18,5 +18,17 @@
   {
       "ParameterKey": "EmrLogBucket",
       "ParameterValue": "$[alfred_getmediabucket]"
-  }
+  },
+  {
+      "ParameterKey": "CreateEmr",
+      "ParameterValue": "false"
+  },  
+  {
+      "ParameterKey": "QSS3BucketName",
+      "ParameterValue": "$[alfred_getmediabucket]"
+  },
+  {
+      "ParameterKey": "QSS3KeyPrefix",
+      "ParameterValue": ""
+  }  
 ]

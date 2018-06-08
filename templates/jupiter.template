@@ -1060,7 +1060,7 @@
                         "-",
                         [
                             {
-                                "Ref": "AWS::StackName"
+                                "Ref": "AWS::Region"
                             },
                             "JupiterEnvironment"
                         ]
