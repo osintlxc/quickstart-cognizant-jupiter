@@ -19,7 +19,7 @@ global:
   reporting: true
  
 tests:
-  quickstart-cognizant-jupitert1:
+  jupitert1:
     parameter_input: input.json
     template_file: jupiter-master.template
     regions:

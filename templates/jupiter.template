@@ -561,11 +561,17 @@
                                     ],
                                     "Resource": [
                                         {
-                                         "Fn::Join": ["",[
-										"arn:aws:s3:::jupiterqs-",
-										{"Ref": "AWS::Region"}]]
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::jupiterqs-",
+                                                    {
+                                                        "Ref": "AWS::Region"
+                                                    }
+                                                ]
+                                            ]
                                         }
-										]
+                                    ]
                                 },
                                 {
                                     "Action": [
@@ -574,12 +580,18 @@
                                     "Effect": "Allow",
                                     "Resource": [
                                         {
-                                         "Fn::Join": ["",[
-										"arn:aws:s3:::jupiterqs-",
-										{"Ref": "AWS::Region"},
-										"/*"]]
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::jupiterqs-",
+                                                    {
+                                                        "Ref": "AWS::Region"
+                                                    },
+                                                    "/*"
+                                                ]
+                                            ]
                                         }
-										]
+                                    ]
                                 }
                             ]
                         }
@@ -686,10 +698,16 @@
                 },
                 "Description": "JUPITER continuous testing",
                 "SourceBundle": {
-                    "S3Bucket": {                       
-                                         "Fn::Join": ["",[
-										"jupiterqs-",
-										{"Ref": "AWS::Region"}]]                                        
+                    "S3Bucket": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "jupiterqs-",
+                                {
+                                    "Ref": "AWS::Region"
+                                }
+                            ]
+                        ]
                     },
                     "S3Key": "jupiter.war"
                 }
